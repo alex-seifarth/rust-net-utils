@@ -5,6 +5,7 @@ use super::*;
 /// Struct describing a single IPv4 or IPv6 capable network interface configuration.
 /// Note that in a typical system a single interface (identified by its name) can have multiple
 /// configurations simultaneously.
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub struct IpInterface {
     /// interface index
     pub index: u32,
@@ -127,3 +128,42 @@ impl IpInterface {
     }
 }
 
+unsafe impl Send for IpInterface {}
+
+unsafe impl Sync for IpInterface {}
+
+impl Unpin for IpInterface {}
+
+
+#[cfg(test)]
+mod test {
+
+    use super::*;
+    use std::net::{SocketAddr, SocketAddrV4, Ipv4Addr};
+
+    fn create_ip_with_flags(flags: i32) -> IpInterface {
+        let addr = SocketAddr::V4(SocketAddrV4::new(Ipv4Addr::new(127, 0, 0, 1), 4711));
+        IpInterface { index: 2, name: String::from("eht0"), flags: flags as libc::c_uint,
+            address: addr.clone(), net_mask: addr.clone(), broadcast_address: None, p2p_address: None }
+    }
+
+    #[test]
+    fn test_flags() {
+        let ipi = create_ip_with_flags(libc::IFF_LOOPBACK | libc::IFF_UP as i32 );
+        assert_eq!(ipi.is_p2p(), false);
+        assert_eq!(ipi.is_loopback(), true);
+        assert_eq!(ipi.is_up(), true);
+        assert_eq!(ipi.is_l1_up(), false);
+        assert_eq!(ipi.has_dynamic_address(), false);
+        assert_eq!(ipi.supports_multicast(), false);
+
+        let ipi = create_ip_with_flags(libc::IFF_MULTICAST | libc::IFF_UP | libc::IFF_MULTICAST
+            | libc::IFF_LOWER_UP as i32 );
+        assert_eq!(ipi.is_p2p(), false);
+        assert_eq!(ipi.is_loopback(), false);
+        assert_eq!(ipi.is_up(), true);
+        assert_eq!(ipi.is_l1_up(), true);
+        assert_eq!(ipi.has_dynamic_address(), false);
+        assert_eq!(ipi.supports_multicast(), true);
+    }
+}
