@@ -5,8 +5,6 @@ edition = "2018"
 description = "Utility tools for network related applications under linux."
 authors = ["Alexander Seifarth"]
 license = "MIT"
-license-file = "LICENSE"
-
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
