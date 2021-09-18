@@ -25,6 +25,7 @@ Contributors names and contact info
   * creating std::net::SocketAddr from libc::sockaddr for IPv4, IPv6
   * listing network interfaces with IP configuration
   * interface name / index mapping
+  * multicast sockets (std / tokio) with SO_REUSEADDR
 
 ## License
 
